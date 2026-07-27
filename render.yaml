@@ -1,0 +1,24 @@
+services:
+  # 1. Frontend Web Service (Vite Static Site)
+  - type: web
+    name: auraresto-frontend
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # 2. FastAPI Backend API Service
+  - type: web
+    name: auraresto-backend
+    env: python
+    region: singapore
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: GEMINI_API_KEY
+        sync: false
