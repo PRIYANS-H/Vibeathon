@@ -105,165 +105,132 @@ export const KitchenView = () => {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Active Kitchen Order Tickets */}
+      </div>      {/* Kitchen Kanban Board Layout */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold font-display text-white flex items-center gap-2">
             <Flame className="w-5 h-5 text-amber-400" />
-            Active Kitchen Tickets ({activeOrders.length})
+            Kitchen Display System (Kanban Workflow)
           </h3>
           <span className="text-xs text-slate-400 font-mono flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-dot inline-block" />
-            Real-time WebSocket Sync
+            Live Realtime Sync
           </span>
         </div>
 
-        {activeOrders.length === 0 && (
-          <div className="text-center py-16 glass-card rounded-3xl space-y-2">
-            <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-            <p className="text-lg font-bold font-display text-white">Kitchen Clear!</p>
-            <p className="text-slate-400 text-sm">No active tickets. All orders fulfilled.</p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {activeOrders.map(order => {
-            const { elapsedMins, targetSla, progressPercent, statusColor } = getSlaMetrics(order);
-            const isBreached = progressPercent >= 100;
+        {/* 4 Columns: Placed, In Kitchen, Ready, Served */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { id: 'placed', title: 'Pending (Placed)', color: 'border-indigo-500/40 bg-indigo-950/10' },
+            { id: 'in_kitchen', title: 'Cooking (In Kitchen)', color: 'border-amber-500/40 bg-amber-950/10' },
+            { id: 'ready', title: 'Ready (For Pickup)', color: 'border-emerald-500/40 bg-emerald-950/10' },
+            { id: 'served', title: 'Delivered / Closed', color: 'border-purple-500/40 bg-purple-950/10' }
+          ].map(col => {
+            const colOrders = orders.filter(o => o.status === col.id || (col.id === 'served' && o.status === 'billed'));
 
             return (
-              <div
-                key={order.id}
-                className={`rounded-3xl p-6 flex flex-col justify-between space-y-4 transition-all border ${
-                  statusColor === 'red' ? 'glass-card-danger sla-breach-pulse' :
-                  statusColor === 'amber' ? 'glass-card-warning' :
-                  'glass-card-success'
-                }`}
-              >
-                <div>
-                  {/* Ticket Header */}
-                  <div className="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-3">
-                    <div>
-                      <span className="text-xs font-mono font-bold text-slate-400 block">{order.id}</span>
-                      <h4 className="text-lg font-bold text-white font-display mt-0.5">{order.table_number}</h4>
-                      <span className="text-[11px] text-slate-400">Customer: {order.customer_name}</span>
-                    </div>
-
-                    <div className="text-right">
-                      <div className={`px-3 py-1 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 ${
-                        statusColor === 'red' ? 'bg-rose-950 text-rose-300 border border-rose-800' :
-                        statusColor === 'amber' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
-                        'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                      }`}>
-                        <Clock className="w-3.5 h-3.5" />
-                        {elapsedMins} / {targetSla} mins
-                      </div>
-                      <span className="text-[10px] text-slate-400 block mt-1 uppercase font-semibold">{order.station || 'Kitchen'}</span>
-                    </div>
-                  </div>
-
-                  {/* SLA Progress Bar */}
-                  <div className="space-y-1 pt-2">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400 font-semibold">SLA Decay</span>
-                      <span className={`font-mono font-bold ${
-                        statusColor === 'red' ? 'text-rose-400' : statusColor === 'amber' ? 'text-amber-400' : 'text-emerald-400'
-                      }`}>
-                        {progressPercent}% {isBreached ? '• BREACHED!' : ''}
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-                      <div
-                        className={`h-full transition-all ${
-                          statusColor === 'red' ? 'bg-rose-500' : statusColor === 'amber' ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Order Stage Stepper */}
-                  <div className="grid grid-cols-4 gap-1 pt-3">
-                    {['placed', 'in_kitchen', 'ready', 'served'].map((stage, idx) => {
-                      const stageIdx = ['placed', 'in_kitchen', 'ready', 'served'].indexOf(order.status);
-                      const isPassed = idx <= stageIdx;
-                      return (
-                        <div key={stage} className="space-y-0.5">
-                          <div className={`h-1 rounded-full ${isPassed ? (statusColor === 'red' ? 'bg-rose-500' : statusColor === 'amber' ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-slate-800'}`} />
-                          <span className={`block text-[9px] font-bold uppercase text-center ${isPassed ? 'text-slate-300' : 'text-slate-600'}`}>
-                            {['Order', 'Cooking', 'Ready', 'Served'][idx]}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Ordered Items */}
-                  <div className="pt-4 space-y-2">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Items:</span>
-                    <ul className="space-y-1.5">
-                      {order.items.map((item, idx) => (
-                        <li key={idx} className="flex items-center justify-between bg-slate-950/60 p-2 rounded-xl text-xs border border-slate-800">
-                          <span className="font-semibold text-slate-200">
-                            <span className="text-indigo-400 font-mono mr-1.5">x{item.quantity}</span>
-                            {item.name}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] uppercase font-bold ${
-                            item.status === 'ready' ? 'bg-emerald-500/20 text-emerald-400' :
-                            item.status === 'cooking' ? 'bg-amber-500/20 text-amber-400' :
-                            'bg-slate-800 text-slate-400'
-                          }`}>
-                            {item.status}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              <div key={col.id} className={`rounded-3xl border ${col.color} p-4 flex flex-col space-y-3 min-h-[420px]`}>
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                  <h4 className="text-xs font-bold font-display text-white uppercase tracking-wider">{col.title}</h4>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800 text-slate-300">
+                    {colOrders.length}
+                  </span>
                 </div>
 
-                {/* Stage Action Buttons */}
-                <div className="pt-2 border-t border-slate-800/80 space-y-2">
-                  {order.status === 'placed' && (
-                    <button
-                      onClick={() => updateOrderStatus(order.id, 'in_kitchen')}
-                      className="w-full py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
-                    >
-                      <Flame className="w-4 h-4" />
-                      Start Cooking
-                    </button>
+                <div className="flex-1 space-y-3 overflow-y-auto">
+                  {colOrders.length === 0 && (
+                    <div className="py-12 text-center text-slate-600 text-xs font-mono">No tickets</div>
                   )}
-                  {order.status === 'in_kitchen' && (
-                    <button
-                      onClick={() => updateOrderStatus(order.id, 'ready')}
-                      className="w-full py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Mark Ready for Pickup
-                    </button>
-                  )}
-                  {order.status === 'ready' && (
-                    <button
-                      onClick={() => {
-                        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-                        updateOrderStatus(order.id, 'served');
-                      }}
-                      className="w-full py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
-                    >
-                      <UtensilsCrossed className="w-4 h-4" />
-                      Mark Served to Table
-                    </button>
-                  )}
-                  {order.status === 'served' && (
-                    <button
-                      onClick={() => openBilling(order.id)}
-                      className="w-full py-2.5 rounded-2xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
-                    >
-                      <Receipt className="w-4 h-4" />
-                      Generate Bill & Close
-                    </button>
-                  )}
+
+                  {colOrders.map(order => {
+                    const { elapsedMins, targetSla, progressPercent, statusColor } = getSlaMetrics(order);
+                    return (
+                      <div
+                        key={order.id}
+                        className={`rounded-2xl p-4 border flex flex-col justify-between space-y-3 transition-all bg-slate-900/90 ${
+                          statusColor === 'red' ? 'border-rose-500/80 shadow-rose-500/20 shadow-lg' :
+                          statusColor === 'amber' ? 'border-amber-500/60' : 'border-slate-800'
+                        }`}
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs font-bold text-indigo-400">{order.id}</span>
+                            <span className="text-xs font-bold text-white bg-slate-800 px-2 py-0.5 rounded-lg">{order.table_number}</span>
+                          </div>
+
+                          <div className="text-xs font-semibold text-slate-300">{order.customer_name}</div>
+
+                          <div className="space-y-1 bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+                            {order.items.map((item, idx) => (
+                              <div key={idx} className="flex justify-between text-[11px] text-slate-300 font-mono">
+                                <span>{item.quantity}x {item.name}</span>
+                                <span>₹{item.price}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* SLA Timer */}
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                              <span>SLA Elapsed</span>
+                              <span className={statusColor === 'red' ? 'text-rose-400 font-bold' : ''}>
+                                {elapsedMins} / {targetSla}m
+                              </span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all ${
+                                  statusColor === 'red' ? 'bg-rose-500 animate-pulse' :
+                                  statusColor === 'amber' ? 'bg-amber-500' : 'bg-emerald-500'
+                                }`}
+                                style={{ width: `${Math.min(100, progressPercent)}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Quick Stage Actions */}
+                        <div className="pt-2 border-t border-slate-800 flex flex-col gap-1.5">
+                          {order.status === 'placed' && (
+                            <button
+                              onClick={() => updateOrderStatus(order.id, 'in_kitchen')}
+                              className="w-full py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] transition-all"
+                            >
+                              Start Cooking
+                            </button>
+                          )}
+                          {order.status === 'in_kitchen' && (
+                            <button
+                              onClick={() => updateOrderStatus(order.id, 'ready')}
+                              className="w-full py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] transition-all"
+                            >
+                              Mark Ready
+                            </button>
+                          )}
+                          {order.status === 'ready' && (
+                            <button
+                              onClick={() => {
+                                confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+                                updateOrderStatus(order.id, 'served');
+                              }}
+                              className="w-full py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] transition-all"
+                            >
+                              Deliver to Table
+                            </button>
+                          )}
+                          {order.status === 'served' && (
+                            <button
+                              onClick={() => openBilling(order.id)}
+                              className="w-full py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-[11px] transition-all"
+                            >
+                              Generate Bill
+                            </button>
+                          )}
+                        </div>
+
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );

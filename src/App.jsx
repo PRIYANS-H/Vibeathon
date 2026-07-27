@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/Header';
 import { CustomerView } from './components/CustomerView';
@@ -10,18 +10,28 @@ import { AuthModal } from './components/AuthModal';
 import { AICaptainModal } from './components/AICaptainModal';
 import { FeedbackModal } from './components/FeedbackModal';
 import { RealtimeLogDrawer } from './components/RealtimeLogDrawer';
-import { Toast } from './components/Toast';           // FIX 1.4
-import { BillingModal } from './components/BillingModal'; // FIX 1.1
+import { Toast } from './components/Toast';
+import { BillingModal } from './components/BillingModal';
+import { CommandPalette } from './components/CommandPalette';
+import { TableQRModal } from './components/TableQRModal';
 
 const MainContent = () => {
   const {
     currentRole,
-    toast, dismissToast,       // FIX 1.4
-    billingOrderId, closeBilling // FIX 1.1
+    toast, dismissToast,
+    billingOrderId, closeBilling
   } = useApp();
 
   const [logsOpen, setLogsOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+
+  useEffect(() => {
+    const handleQREvent = () => setQrOpen(true);
+    window.addEventListener('open-qr-modal', handleQREvent);
+    return () => window.removeEventListener('open-qr-modal', handleQREvent);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
@@ -40,18 +50,25 @@ const MainContent = () => {
         {currentRole === 'admin'    && <AdminDashboard />}
       </main>
 
-      {/* Footer — 4.4 Team Branding */}
+      {/* Footer — Operational Thesis Branding */}
       <footer className="border-t border-slate-800/80 bg-slate-950 py-6 px-4 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-left space-y-1">
             <p className="text-white font-bold font-display">AuraResto OS · Platinum Tier Submission</p>
-            <p className="text-slate-500 text-[11px]">VibeAthon 6.0 (2K26) · Built by Team Antigravity Innovators</p>
+            <p className="text-slate-400 text-[11px]">
+              "Reducing wait times & food wastage through AI-assisted restaurant operations."
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-[11px]">
+            <button
+              onClick={() => setCmdOpen(true)}
+              className="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-mono transition-colors"
+            >
+              <kbd className="text-indigo-400">Ctrl + K</kbd> Command Palette
+            </button>
             <span className="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono">FastAPI</span>
             <span className="px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 font-mono">Supabase Realtime</span>
             <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-mono">Gemini 1.5 Flash</span>
-            <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 font-mono">Tailwind v4</span>
           </div>
         </div>
       </footer>
@@ -62,13 +79,15 @@ const MainContent = () => {
       <AuthModal />
       <AICaptainModal />
       <FeedbackModal />
+      <CommandPalette isOpen={cmdOpen} onClose={() => setCmdOpen(false)} onOpenQRModal={() => setQrOpen(true)} />
+      <TableQRModal isOpen={qrOpen} onClose={() => setQrOpen(false)} />
 
-      {/* FIX 1.1 — Billing modal, triggered from KitchenView "Generate Bill" */}
+      {/* Billing modal */}
       {billingOrderId && (
         <BillingModal orderId={billingOrderId} onClose={closeBilling} />
       )}
 
-      {/* FIX 1.4 — Order confirmation toast */}
+      {/* Confirmation toast */}
       <Toast toast={toast} onDismiss={dismissToast} />
     </div>
   );

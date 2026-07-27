@@ -81,23 +81,38 @@ export const CustomerView = ({ onOpenCart }) => {
           {/* Table Selector & AI Quick Trigger */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
             
-            {/* Table Selection Dropdown */}
-            <div className="bg-slate-900/90 border border-slate-700/70 rounded-2xl p-3 flex items-center gap-3 shadow-inner">
-              <MapPin className="w-5 h-5 text-indigo-400 shrink-0" />
-              <div>
-                <label className="block text-[10px] uppercase font-bold text-slate-400 tracking-wider">Your Table</label>
-                <select
-                  value={selectedTable}
-                  onChange={(e) => setSelectedTable(e.target.value)}
-                  className="bg-transparent text-white font-bold text-sm outline-none cursor-pointer pr-4"
-                >
-                  {tables.map(t => (
-                    <option key={t.id} value={t.id} className="bg-slate-900 text-white">
-                      {t.number} ({t.capacity} Seats) {t.status === 'occupied' ? '• Occupied' : ''}
-                    </option>
-                  ))}
-                </select>
+            {/* Table Selection Dropdown + QR Button */}
+            <div className="bg-slate-900/90 border border-slate-700/70 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-inner">
+              <div className="flex items-center gap-3">
+                <MapPin className="w-5 h-5 text-indigo-400 shrink-0" />
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-slate-400 tracking-wider">Your Table</label>
+                  <select
+                    value={selectedTable}
+                    onChange={(e) => setSelectedTable(e.target.value)}
+                    className="bg-transparent text-white font-bold text-sm outline-none cursor-pointer pr-4"
+                  >
+                    {tables.map(t => (
+                      <option key={t.id} value={t.id} className="bg-slate-900 text-white">
+                        {t.number} ({t.capacity} Seats) {t.status === 'occupied' ? '• Occupied' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              {/* QR Scanner trigger */}
+              <button
+                onClick={() => {
+                  const evt = new CustomEvent('open-qr-modal');
+                  window.dispatchEvent(evt);
+                }}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-400 hover:text-indigo-300 border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all shrink-0"
+                title="Simulate scanning physical table QR code"
+              >
+                <QrCode className="w-4 h-4" />
+                <span className="hidden sm:inline">Scan QR</span>
+              </button>
             </div>
 
             {/* AI Order Prompt Button */}

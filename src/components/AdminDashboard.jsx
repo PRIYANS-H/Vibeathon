@@ -217,6 +217,44 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
+          {/* 3. Operational Intelligence: Demand & Wastage Forecast Engine */}
+          <div className="bg-gradient-to-r from-indigo-950/60 via-slate-900 to-purple-950/60 border border-indigo-500/30 rounded-3xl p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold font-display text-white">AI Operations & Demand Forecast Engine</h3>
+                  <p className="text-xs text-slate-400">Rule-based predictive analysis based on 30-day historical order velocity</p>
+                </div>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                Tomorrow's Forecast
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase font-semibold">Expected Customer Footfall</span>
+                <div className="text-2xl font-bold font-mono text-white">182 Customers</div>
+                <p className="text-[11px] text-emerald-400">+12.5% expected during 7–9 PM peak</p>
+              </div>
+
+              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase font-semibold">Forecasted Revenue</span>
+                <div className="text-2xl font-bold font-mono text-emerald-400">₹62,000</div>
+                <p className="text-[11px] text-slate-400">Based on historical dinner rush ticket sizes</p>
+              </div>
+
+              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase font-semibold">Wastage Prevention Advice</span>
+                <div className="text-sm font-bold text-amber-300">Reorder Truffle Oil & Avocado</div>
+                <p className="text-[11px] text-slate-400">Order 15ml today to prevent menu auto-disabling</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       )}
 

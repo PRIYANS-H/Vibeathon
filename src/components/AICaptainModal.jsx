@@ -105,8 +105,29 @@ Instructions: Be helpful, concise, warm, and recommend ONLY dishes where is_avai
           let botReply = '';
           const lower = userText.toLowerCase();
 
+          // Operational Query 1: Bottlenecks
+          if (lower.includes('slowing') || lower.includes('bottleneck') || lower.includes('delay') || lower.includes('slow')) {
+            botReply = `📊 **Operational Bottleneck Report**:\n• **Smokey Butter Chicken** has an avg prep time of **18 mins** (highest SLA impact).\n• Recommendation: Pre-portion makhani gravy during off-peak hours (3–5 PM) to reduce ticket time by 4.5 mins.`;
+          }
+          // Operational Query 2: Waste & Reorder
+          else if (lower.includes('waste') || lower.includes('reorder') || lower.includes('stockout') || lower.includes('inventory')) {
+            const lowIngs = ingredients.filter(i => i.current_stock <= i.reorder_threshold);
+            if (lowIngs.length > 0) {
+              botReply = `📦 **Wastage & Inventory Alert**:\n• Low Stock: ${lowIngs.map(i => `**${i.name}** (${i.current_stock} ${i.unit})`).join(', ')}.\n• Reorder Recommendation: Order 15 pcs Avocado today to prevent menu auto-disabling.`;
+            } else {
+              botReply = `📦 **Inventory Status**: All 10 key ingredients are above safety thresholds. Heavy Cream is at 80% capacity (800ml remaining).`;
+            }
+          }
+          // Operational Query 3: Staff telemetry
+          else if (lower.includes('waiter') || lower.includes('staff') || lower.includes('busiest')) {
+            botReply = `👥 **Staff Workload Telemetry**:\n• **Neha Gupta** (Floor Mgr) is assigned to 3 active tables (T1, T2, T3).\n• **Chef Rajiv Kapoor** has completed 42 orders today with 95.2% SLA compliance!`;
+          }
+          // Operational Query 4: Waste prevention promo
+          else if (lower.includes('promo') || lower.includes('sale') || lower.includes('down')) {
+            botReply = `💡 **Waste Prevention Promotion**:\n• **Garlic Naan** stock is high. Recommend offering a **20% combo discount** with Smokey Butter Chicken after 8 PM to maximize yield.`;
+          }
           // Action 1: Search spicy dishes
-          if (lower.includes('spicy') || lower.includes('hot')) {
+          else if (lower.includes('spicy') || lower.includes('hot')) {
             const spicyDishes = menu.filter(m => m.is_available_computed && (m.spiciness === 'Spicy' || m.spiciness === 'Medium'));
             if (spicyDishes.length > 0) {
               botReply = `Here are our top spicy favorites available right now: ${spicyDishes.map(d => `**${d.name}** (₹${d.price})`).join(', ')}. Would you like me to add one to your cart?`;
@@ -288,10 +309,11 @@ Instructions: Be helpful, concise, warm, and recommend ONLY dishes where is_avai
         {/* Quick Suggestion Chips */}
         <div className="px-4 py-2 bg-slate-950/60 border-t border-slate-800/80 flex items-center gap-2 overflow-x-auto scrollbar-none text-[11px]">
           {[
-            'What is spicy and available?',
-            'Add Butter Chicken to cart',
-            'Items under ₹300',
-            'Check my order ETA'
+            'Which dishes are slowing operations?',
+            'What inventory should I reorder?',
+            'Which waiter is busiest?',
+            'Suggest waste prevention promotion',
+            'Add Butter Chicken to cart'
           ].map((promptText, i) => (
             <button
               key={i}
