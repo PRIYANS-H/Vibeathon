@@ -14,7 +14,8 @@ import {
   ThumbsUp,
   Star,
   Zap,
-  RotateCcw
+  RotateCcw,
+  QrCode
 } from 'lucide-react';
 
 export const CustomerView = ({ onOpenCart }) => {
